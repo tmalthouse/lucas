@@ -1,0 +1,8 @@
+{
+    "name": "Clara",
+    "wavelength": 1553.7,
+    "R": 0.56,
+    "G": 1,
+    "Threshold": 8.1,
+    "OpCurrent": 221.76
+}

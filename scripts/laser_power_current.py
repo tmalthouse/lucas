@@ -4,6 +4,7 @@ import sys, getopt
 from scipy.stats import linregress
 
 import matplotlib.pyplot as plt
+from settings import *
 
 def main(argv):
     if (len(argv) != 3):
@@ -11,10 +12,10 @@ def main(argv):
         sys.exit(2)
     
     
-    with open(argv[1], "r") as laserdat:
+    with open(DATA_DIR / "lasers" / argv[1], "r") as laserdat:
         laserdata = json.load(laserdat)
     
-    ivcurve = np.genfromtxt(argv[2], delimiter=',')[1:] #Get rid of the header line
+    ivcurve = np.genfromtxt(DATA_DIR / "lasers" / argv[2], delimiter=',')[1:] #Get rid of the header line
 
     currents, voltages = ivcurve.T
 
@@ -45,6 +46,7 @@ def main(argv):
     plt.xlabel("Current (mA)")
     plt.ylabel("Laser power (mW)")
     plt.legend()
+    plt.savefig(FIG_DIR / "lasers" / "{}_response.pdf".format(laserdata['name']))
     plt.show()
 
     resids = lin_powers - est_power(lin_currents)
@@ -52,6 +54,7 @@ def main(argv):
     plt.scatter(lin_currents, resids, marker='.')
     plt.xlabel("Current (mA)")
     plt.ylabel("Residual")
+    plt.savefig(FIG_DIR / "lasers" / "{}_resids.pdf".format(laserdata['name']))
     plt.show()
 
 def specsheetcurve(laserdata):
