@@ -18,10 +18,10 @@ def main(argv):
 
     currents, voltages = ivcurve.T
 
-    powers = voltages /( laserdata['R'] * laserdata['G'])
+    powers = voltages /(laserdata['R'] * laserdata['G'])
 
-    lin_currents = currents[powers>0.01]
-    lin_powers = powers[powers>0.01]
+    lin_currents = currents[powers>0.05]
+    lin_powers = powers[powers>0.05]
 
     slope, intercept, R2, _, stderr = linregress(lin_currents, lin_powers)
 
