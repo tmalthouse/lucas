@@ -3,6 +3,7 @@ from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
 import sys
 import settings
+import utils
 
 def phasediff(ch1,ch2, freq):
     #First adjust both to be centered at 0
@@ -56,11 +57,9 @@ def main(data, base, step):
 
 if __name__ == "__main__":
     argv = sys.argv
-    if len(argv) != 4:
-        print("Need 4 args: datafile, initial freq, and step")
+    if len(argv) != 2:
+        print("Need a datafile to run on")
         sys.exit(2)
     
-    data = np.load(settings.DATA_DIR / "delay" / "{}.npy".format(argv[1]))
-    base = int(argv[2])
-    step = float(argv[3])
-    main(data,base,step)
+    data, md = utils.load(settings.DATA_DIR / "delay" / "{}".format(argv[1]))
+    main(data, md['fmin'], md['fstep'])

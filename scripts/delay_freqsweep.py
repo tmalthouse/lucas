@@ -103,7 +103,7 @@ def main(min, max, step, fname):
 
 if __name__ == "__main__":
     argv = sys.argv
-    if len(argv) != 5:
+    if len(argv) != 1:
         print("This program requires 4 arguments: min_freq, max_freq, freq_step, and filename")
         exit(-2)
     main(int(argv[1]), int(argv[2]), float(argv[3]), argv[4])
