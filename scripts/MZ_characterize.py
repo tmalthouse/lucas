@@ -45,7 +45,7 @@ def main(argv):
     
     outfn = create_fitted_fn(params)
 
-    print("Fitted Results:\n\ta={}\n\tb={}\n\tc={}".format(*params))
+    print("Fitted Results:\n\ta={}\n\tb={}\n\tc={}\n\t==>Vπ={}".format(*params, np.pi/(2*params[1])))
     
     plt.scatter(Vin, Vout, marker='.')
     fnrange = np.arange(-5,5,0.05)
