@@ -1,7 +1,95 @@
-\documentclass{article}
+\documentclass[fleqn]{article}
 
-\usepackage[margins=1in]{geometry}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath}
+\usepackage{siunitx}
+\usepackage{booktabs}
+\usepackage{footnote}
+\usepackage[showseconds=false, showzone=false]{datetime2}
+\makesavenoteenv{tabular}
+
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+
+\fancyfoot[l]{Thomas Malthouse}
+\fancyfoot[c]{\thepage}
+\fancyfoot[r]{\DTMnow}
 
 \begin{document}
     \section*{Using the AD5206 digital potentiometer with AC signals}
+
+    \begin{itemize}
+        \item The AD5206 behaves like six mechanical potentiometers.
+        \item Each potentiometer has three terminals (A,B, and W), just like a mechanical.
+        \item These potentiometers are (to the best of my knowledge) completely isolated---I did not observe any leakage between them.
+        \item There are two power terminals on the chip: $V_{\text{SS}}$ and $V_{\text{DD}}$.
+        \item These terminals are subject to the constraints that
+        \begin{equation*}
+            V_{\text{SS}} \leq 0 \leq V_{\text{DD}}
+        \end{equation*}
+        and
+        \begin{equation*}
+            |V_{\text{DD}}| + |V_{\text{SS}}| \leq 5.5V
+        \end{equation*}
+        \item The potentials of all three wiper terminals MUST be between $V_\text{SS}$ and $V_\text{DD}$:
+        \begin{equation*}
+            V_\text{SS} \leq \{A,B,W\} \leq V_\text{DD}
+        \end{equation*}
+        \item If this condition is not met, the response is nonlinear, and signals are distorted.
+    \end{itemize}
+    \subsection*{Monopolar Mode}
+        These potentiometers are usually used in (and most online resources assume) monopolar mode
+        \begin{itemize}
+            \item In this mode, $V_{\text{SS}} = 0V = \text{GND}$, and $V_{\text{DD}} = 5V$.
+            \item This is very convenient, since the logic output of most microcontrollers (e.g. Arduino) is $5V$, so no step-down is needed.
+            \item However, because of the voltage bounds mentioned above, this means we can't send zero-offset AC signals (like we're working with here) through the digipot
+            \item We could add an offset using an opamp, but that makes scaling very difficult, and adds unnecessary noise.
+        \end{itemize}
+    \subsection*{Bipolar Mode}
+         Instead, we can operate in bipolar mode, where $V_{\text{SS}} < 0$. Some considerations in this mode:
+        \begin{itemize}
+            \item The potential bounds still apply. If we power the digipot with $\pm 2.5V$, the signal must fall within those bounds as well. This should not be a problem, since our signal should be within the $\pm1V$ envelope.
+            \item The logic voltage must be within $0.3V$ of $V_\text{DD}$ (or specifically, when $V_\text{DD} = 3V$, the logic must be between $2.6V$ and $3.3V$, as per the datasheet).
+            \item Logic low is still ground.
+            \item There are $3.3V$ logic Arduinos, which could directly drive the chip in this mode. I am looking to acquire one of these, to eliminate the three voltage dividers needed with a $5V$ arduino.
+        \end{itemize}
+    \subsection*{Communication}
+        \begin{itemize}
+            \item We communicate with the potentiometer using SPI (serial peripheral interface).
+            \item To set a resistance:
+            \begin{itemize}
+                \item Drive the CS (chip select) pin low
+                \item Write the address as a single byte, MSB first. Because valid addresses are $0-5$ (zero-indexed), the word will look like \texttt{0b00000101} (for address 5).
+                \item In Arduino, this can be done with \texttt{SPI.transfer(channel)}, where channel is in the range $0-5$.
+                \item Then write the desired potentiometer value as a single byte, ranging from 0 (minimum resistance) to 255 (maximum resistance). In theory, the output resistance at step $n$ will be
+                \begin{equation*}
+                    R_\text{out} = (n/255)\cdot \SI{50}{\kilo\ohm}
+                \end{equation*}
+                Experimental response curves are detailed below.
+                \item Drive the CS pin high.
+                \item The code used on the Arduino is in the associated Github repository.
+            \end{itemize}
+        \end{itemize}
+    \subsection*{Odds and ends}
+        \begin{itemize}
+            \item During testing, I used an external power supply tuned to $\pm2.5V$. However, to simplify the circuit (the less wires running on and off the board, the better), I am using voltage dividers off the $\pm15V$ opamp bus.
+            \item Because of gaps in our resistor set, I was not able to power the chip at $\pm2.5V$. Instead, it is powered at $-2V/+3V$. This should not present a problem, since it still gives us the $\pm2V$ envelope, which should be sufficient. 
+            \item IMPORTANT!!! The AD5206 comes in three varieties---$\SI{10}{\kilo\ohm}$, $\SI{50}{\kilo\ohm}$, and $\SI{100}{\kilo\ohm}$. The 10 and 100 varieties DO NOT respond properly in bipolar mode. This was not documented anywhere, but only the $\SI{50}{\kilo\ohm}$ works for our purposes.
+            \item The only possible explanation I was able to find is that the $\SI{50}{\kilo\ohm}$ is listed as RoHS compliant on DigiKey, while the others are not. The $\SI{50}{\kilo\ohm}$ could therefore be a newer make. This stymied me for about 5 days, since I was using a $\SI{100}{\kilo\ohm}$.
+        \end{itemize}
+        \subsection*{Response curves}
+        \begin{tabular}{lll}
+            \toprule
+            Potentiometer & Base resistance ($\Omega$) & Response ($\Omega/\text{tick}$) \\ \midrule
+            Ideal & $50$\footnote{``Typical'' wiper resistance from datasheet} & $196.1$ \\
+            R1 & $30.3$ & $202.6$ \\
+            R2 & $39.5$ & $202.3$ \\
+            R3 & $39.9$ & $202.1$ \\
+            R4 & $42.0$ & $202.1$ \\
+            R5 & $10.9$ & $202.6$ \\
+            R6 & $27.4$ & $202.4$ \\\bottomrule
+        \end{tabular}\vspace{1em}
+
+        \noindent These resistors have a small (near-negligible) wiper resistance, and a slightly higher maximum resistance than advertised. The typical maximum resistance was about $\SI{51.5}{\kilo\ohm}$. No statistically significant nonlinearity was observed.
+    
 \end{document}

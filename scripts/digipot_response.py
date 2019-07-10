@@ -32,18 +32,30 @@ def main(chan, fname):
             outrange[i] = meter.query("MEAS:RES? 1E5")
     
     slope, intercept, _, _, _ = linregress(inputrange, outrange)
+    response_equation = "R = {:.1f}n + {:.1f}".format(slope, intercept)
+    print(
+        "Pot {} response curve: {}".format(
+            chan+1,
+            response_equation
+        )
+    )
 
     plt.scatter(inputrange, outrange, marker='.')
-    plt.plot(inputrange, intercept + slope * inputrange)
+    plt.plot(inputrange, intercept + slope * inputrange,
+        label="${}$".format(response_equation)
+    )
     plt.xlabel("Input")
     plt.ylabel("$R(\\Omega)$")
     plt.ylim(ymin=0)
+    plt.legend()
     plt.show()
 
     utils.save(settings.DATA_DIR / 'digipot' / fname, np.array([inputrange, outrange]), {})
 
 if __name__ == "__main__":
-    argv = sys.argv
-    if len(argv) != 3:
-        print("Arguments: potentiometer #, fname")
-    main(int(argv[1])-1,argv[2])
+    # argv = sys.argv
+    # if len(argv) != 3:
+    #     print("Arguments: potentiometer #, fname")
+    for i in range(6):
+        input("Connect leads to pot {}".format(i+1))
+        main(i,"pot{}response".format(i+1))
