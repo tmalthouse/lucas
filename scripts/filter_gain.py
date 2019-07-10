@@ -2,6 +2,7 @@ import utils, settings
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
+import warnings
 from scipy.stats import linregress
 import scipy.interpolate as interpolate
 import scipy.optimize as opt
@@ -28,7 +29,7 @@ def find_params(freqs, gains):
 
     df = dB2 - dB1
 
-    print(A0,f0,dB3_gain, df)
+    # print(A0,f0,dB3_gain, df)
     return {
         'A0': A0,
         'f0': f0,
@@ -45,7 +46,7 @@ def main(fname):
     for series in data:
         if np.min(series) == -128:
             if not warning_printed:
-                print("Warning: missing data in series. Interpreting as 0. This occurs with very low refresh rates.".format(series))
+                warnings.warn("Warning: missing data in series {}. Interpreting as 0. This occurs with very low refresh rates.".format(series), RuntimeWarning, stacklevel=2)
                 warning_printed = True
             series[series == -128] = 0
 

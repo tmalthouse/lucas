@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 from scipy.stats import linregress
 import sys
+from time import sleep
 
 
 def main(chan, fname):
@@ -27,6 +28,7 @@ def main(chan, fname):
     with digipot.DigiPot() as dp:
         for i in tqdm(inputrange):
             dp.set(chan, i)
+            sleep(0.02)
             outrange[i] = meter.query("MEAS:RES? 1E5")
     
     slope, intercept, _, _, _ = linregress(inputrange, outrange)
@@ -35,6 +37,7 @@ def main(chan, fname):
     plt.plot(inputrange, intercept + slope * inputrange)
     plt.xlabel("Input")
     plt.ylabel("$R(\\Omega)$")
+    plt.ylim(ymin=0)
     plt.show()
 
     utils.save(settings.DATA_DIR / 'digipot' / fname, np.array([inputrange, outrange]), {})

@@ -1,0 +1,58 @@
+#include <stdio.h>
+#include <inttypes.h>
+#include <stdlib.h>
+
+#define printbits(x) for(int i=sizeof(x)<<3; i; i--) \
+ {\
+     putchar('0'+((x>>(i-1))&1));\
+     if (i==9) putchar(' ');\
+ }\
+ printf("\n");
+
+
+unsigned char reverse(unsigned char b) {
+   b = (b & 0xF0) >> 4 | (b & 0x0F) << 4;
+   b = (b & 0xCC) >> 2 | (b & 0x33) << 2;
+   b = (b & 0xAA) >> 1 | (b & 0x55) << 1;
+   return b;
+}
+
+
+int main(int argc, char **argv) {
+    int chan_s = atoi(argv[1]) - 1;
+    int val_s = atoi(argv[2]);
+
+    uint8_t chan = (uint8_t)chan_s, val = (uint8_t)val_s;
+    printf("Read chan=%d, val=%d\n", chan, val);
+
+    uint16_t packet = 0;
+    printf("Binary channel:\t");
+    printbits(chan);
+    printf("Binary val:\t");
+    printbits(val);
+
+
+
+    uint8_t *packet_bytes = (uint8_t*)(&packet);
+    packet_bytes[1] = chan;
+    packet_bytes[0] = val;
+
+
+    printbits(packet);
+    packet = packet<<5;
+    printbits(packet);
+    
+    printbits(packet_bytes[1])
+
+    return 0;
+}
+
+uint16_t form_packet(uint8_t chan, uint8_t val) {
+    uint16_t packet = 0;
+
+    uint8_t *packet_bytes = (uint8_t*)(&packet);
+    packet_bytes[1] = chan;
+    packet_bytes[0] = val;
+
+    return packet<<5;
+}
