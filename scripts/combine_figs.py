@@ -29,7 +29,7 @@ def main(args):
 
     tex_snippets = [
         '''
-        \\includegraphics[width=0.9\\textwidth]{{{}}}
+        \\includegraphics[width=0.3\\textwidth]{{{}}}
 
         '''.format(p)
         for p in args[1:]

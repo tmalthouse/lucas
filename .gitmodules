@@ -1,0 +1,3 @@
+[submodule "numericalanalysis/PyDDE"]
+	path = numericalanalysis/PyDDE
+	url = https://github.com/hensing/PyDDE.git

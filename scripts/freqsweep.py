@@ -5,6 +5,7 @@ import time
 import sys
 import math
 import utils
+from tqdm import tqdm
 
 def convert_data(rawdata):
     return np.array([x if x <= 127 else x-256 for x in map(ord,rawdata)])
@@ -76,8 +77,8 @@ def main(min, max, step, fname):
     frames = []
 
     print("Beginning sweep...")
-    for f in np.arange(min, max, step):
-        print("f={:.2f}Hz".format(f))
+    for f in tqdm(np.arange(min, max, step)):
+        # print("f={:.2f}Hz".format(f))
         set_freq(fngen, f)
 
         tpd = scopefriendly_tperdiv(f)

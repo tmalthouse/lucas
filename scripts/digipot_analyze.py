@@ -25,6 +25,8 @@ def main():
         plt.ylabel("Residual resistance ($\\Omega$)")
         plt.savefig(settings.FIG_DIR / 'digipot' / "pot{}_resids.pdf".format(i))
         plt.show()
+
+        
     utils.save(settings.DATA_DIR / 'digipot' / 'potentiometers', {})
 
 

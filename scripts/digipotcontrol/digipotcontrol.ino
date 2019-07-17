@@ -36,6 +36,9 @@
 // set pin 10 as the slave select for the digital pot:
 const int slaveSelectPin = 10;
 
+// We don't want to connect to digipot unless it's powered
+const int safetyLatchPin = 11;
+
 const char OK = 0x41;
 const char ERR = 0x42;
 
@@ -52,6 +55,8 @@ void setup() {
   }
   // set the slaveSelectPin as an output:
   pinMode(slaveSelectPin, OUTPUT);
+
+  pinMode(safetyLatchPin, INPUT);
   // initialize SPI:
   SPI.begin();
   Serial.println(OK);
@@ -60,6 +65,12 @@ void setup() {
 
 void loop() {
   static char buf[8];
+
+  // If the digipot isn't connected, we can't send in signals. End the program
+  if (digitalRead(safetyLatchPin) == LOW) {
+    Serial.println(ERR);
+    SPI.end();
+  }
 
   if (Serial.available() > 0) {
     get_serialdata(buf);
@@ -72,6 +83,8 @@ void loop() {
     Serial.println(ERR);
     return;
   }
+
+  digitalPotWrite(setting.chan, setting.val);
   digitalPotWrite(setting.chan, setting.val);
   Serial.println(OK);
   return;

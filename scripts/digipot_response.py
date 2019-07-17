@@ -28,7 +28,7 @@ def main(chan, fname):
     with digipot.DigiPot() as dp:
         for i in tqdm(inputrange):
             dp.set(chan, i)
-            sleep(0.02)
+            sleep(0.05)
             outrange[i] = meter.query("MEAS:RES? 1E5")
     
     slope, intercept, _, _, _ = linregress(inputrange, outrange)
@@ -53,9 +53,12 @@ def main(chan, fname):
     utils.save(settings.DATA_DIR / 'digipot' / fname, np.array([inputrange, outrange]), {})
 
 if __name__ == "__main__":
-    # argv = sys.argv
-    # if len(argv) != 3:
-    #     print("Arguments: potentiometer #, fname")
-    for i in range(6):
+    try:
+        arg = int(sys.argv[1])
+        pot_range = [arg-1]
+    except ValueError:
+        pot_range = range(6)
+
+    for i in pot_range:
         input("Connect leads to pot {}".format(i+1))
         main(i,"pot{}response".format(i+1))

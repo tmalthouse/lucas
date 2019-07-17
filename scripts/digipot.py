@@ -36,6 +36,19 @@ class DigiPot(object):
             raise IOError("Bad return code: '{}'. Expected 'A'".format(line))
 
 
+class DigiPotDummy(object):
+    def __init__(self):
+        pass
+    
+    def __enter__(self):
+        return self
+    
+    def __exit__(self, exc_type, exc_value, traceback):
+        pass
+    
+    def set(self, chan, val):
+        pass
+
 if __name__ == "__main__":
     with DigiPot() as dp:
         IPython.embed()
