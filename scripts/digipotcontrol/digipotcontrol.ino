@@ -39,8 +39,9 @@ const int slaveSelectPin = 10;
 // We don't want to connect to digipot unless it's powered
 const int safetyLatchPin = 11;
 
-const char OK = 0x41;
-const char ERR = 0x42;
+const char OK = 'A';
+const char PWR_ERR = 'B';
+const char STR_ERR = 'C';
 
 struct pot_setting {
   uint8_t chan;
@@ -66,12 +67,6 @@ void setup() {
 void loop() {
   static char buf[8];
 
-  // If the digipot isn't connected, we can't send in signals. End the program
-  if (digitalRead(safetyLatchPin) == LOW) {
-    Serial.println(ERR);
-    SPI.end();
-  }
-
   if (Serial.available() > 0) {
     get_serialdata(buf);
   } else {
@@ -80,7 +75,7 @@ void loop() {
 
   struct pot_setting setting = decode_string(buf);
   if (!setting.status) {
-    Serial.println(ERR);
+    Serial.println(STR_ERR);
     return;
   }
 

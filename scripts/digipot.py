@@ -3,7 +3,7 @@ from time import sleep
 import IPython
 
 linux_serialport = '/dev/ttyACM0'
-osx_serialport = '/dev/cu.usbmodem14201'
+osx_serialport = '/dev/cu.usbmodem14101'
 
 class DigiPot(object):
     def __init__(self):

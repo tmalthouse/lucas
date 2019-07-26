@@ -26,8 +26,8 @@ def main():
         plt.savefig(settings.FIG_DIR / 'digipot' / "pot{}_resids.pdf".format(i))
         plt.show()
 
-        
-    utils.save(settings.DATA_DIR / 'digipot' / 'potentiometers', {})
+
+
 
 
 if __name__ == "__main__":

@@ -27,9 +27,23 @@ def main(chan, fname):
 
     with digipot.DigiPot() as dp:
         for i in tqdm(inputrange):
-            dp.set(chan, i)
-            sleep(0.05)
-            outrange[i] = meter.query("MEAS:RES? 1E5")
+            done = False
+            while not done:
+                try:
+                    dp.set(chan, i)
+                    done = True
+                except OSError as err:
+                    print("Caught error from controller!")
+                    opt = input("(a)bort, (r)etry, (i)gnore? ")
+                    if 'i' in opt:
+                        done = True
+                        break
+                    if 'r' in opt:
+                        continue
+                    else:
+                        raise err
+                sleep(0.05)
+                outrange[i] = meter.query("MEAS:RES? 1E5")
     
     slope, intercept, _, _, _ = linregress(inputrange, outrange)
     response_equation = "R = {:.1f}n + {:.1f}".format(slope, intercept)
@@ -56,7 +70,7 @@ if __name__ == "__main__":
     try:
         arg = int(sys.argv[1])
         pot_range = [arg-1]
-    except ValueError:
+    except (IndexError, ValueError):
         pot_range = range(6)
 
     for i in pot_range:

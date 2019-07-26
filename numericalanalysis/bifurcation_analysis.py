@@ -14,24 +14,24 @@ _=np.seterr('raise')
 # In[2]:
 
 
-def tau_of_s(params, s, phi, rc, tau_goal = 0):
+def τ_of_s(params, s, φ, rc, τ_goal = 0):
     w_0 = params.w_0
-    x_i = params.x_i
+    ξ = params.ξ
     
-    hfact = 1 - rc * np.sin(phi - x_i * s + s)/np.sin(s)
-    tau = s / (2*w_0**2) * (hfact * np.tan(s) + np.sqrt((hfact * np.tan(s))**2 + 4*w_0**2))
-    ret = tau * w_0 / (2*π)
-    err = tau - tau_goal
+    hfact = 1 - rc * np.sin(φ - ξ * s + s)/np.sin(s)
+    τ = s / (2*w_0**2) * (hfact * np.tan(s) + np.sqrt((hfact * np.tan(s))**2 + 4*w_0**2))
+    ret = τ * w_0 / (2*π)
+    err = τ - τ_goal
     return ret, err
 
 
 # In[3]:
 
 
-def g_of_s(params, s, phi, rc):
-    x_i = params.x_i
+def g_of_s(params, s, φ, rc):
+    ξ = params.ξ
     
-    hfact = 1 - rc*np.cos(phi-x_i*s)
+    hfact = 1 - rc*np.cos(φ-ξ*s)
     
     g = hfact / np.cos(s)
     return g
@@ -40,9 +40,9 @@ def g_of_s(params, s, phi, rc):
 # In[37]:
 
 
-def bin_T_G(tau, dt, prev_idx, pls, nls):
-    lt = tau - dt/2
-    rt = tau + dt/2
+def bin_T_G(τ, dt, prev_idx, pls, nls):
+    lt = τ - dt/2
+    rt = τ + dt/2
     
     li = ri = prev_idx
     
@@ -83,9 +83,9 @@ def bin_T_G(tau, dt, prev_idx, pls, nls):
 # In[33]:
 
 
-def bin_T_G_z(tau, dt, prev_idx, zls):
-    lt = tau - dt/2
-    rt = tau + dt/2
+def bin_T_G_z(τ, dt, prev_idx, zls):
+    lt = τ - dt/2
+    rt = τ + dt/2
     
     li = ri = prev_idx
     
@@ -110,12 +110,12 @@ def cls(t_ub, width, pls, nls):
     
     out_list = []
     
-    for tau in np.arange(0, t_ub, width):
-        catch = bin_T_G(tau, width, catch[1], pls, nls)
+    for τ in np.arange(0, t_ub, width):
+        catch = bin_T_G(τ, width, catch[1], pls, nls)
         if (catch[0] == 0):
             continue
         else:
-            out_list.append(np.array([tau, catch[0]]))
+            out_list.append(np.array([τ, catch[0]]))
     return np.array(out_list)
 
 
@@ -127,29 +127,29 @@ def bzls(t_ub, width, zls):
     
     out_list = []
     
-    for tau in np.arange(0, t_ub, width):
-        catch = bin_T_G_z(tau, width, catch[1], zls)
+    for τ in np.arange(0, t_ub, width):
+        catch = bin_T_G_z(τ, width, catch[1], zls)
         if (catch[0] == 0):
             continue
         else:
-            out_list.append(np.array([tau, catch[0]]))
+            out_list.append(np.array([τ, catch[0]]))
     return np.array(out_list)
 
 
 # In[8]:
 
 
-def array_generate(params, phi, rc):
+def array_generate(params, φ, rc):
     arr_raw = []
     
     for s in np.arange(params.s_min, params.s_max, params.ds):
         try:
             if (
-                tau_of_s(params, s, π/2, rc, 0)[0] <= params.tau_ub and
+                τ_of_s(params, s, π/2, rc, 0)[0] <= params.τ_ub and
                 g_of_s(params, s, π/2, rc) <= params.g_ub and
                 g_of_s(params, s, π/2, rc) >= params.g_lb
             ):
-                arr_raw.append(np.array([tau_of_s(params, s, π/2, rc)[0], g_of_s(params, s, π/2, rc)]))
+                arr_raw.append(np.array([τ_of_s(params, s, π/2, rc)[0], g_of_s(params, s, π/2, rc)]))
         except (ZeroDivisionError, FloatingPointError):
             pass
     
@@ -183,13 +183,13 @@ pls, nls, zls = generate_steps(params)
 # In[38]:
 
 
-cls_out = cls(params.tau_ub, params.width, pls, nls)
+cls_out = cls(params.τ_ub, params.width, pls, nls)
 
 
 # In[31]:
 
 
-bzls = bzls(params.tau_ub, params.width, zls)
+bzls = bzls(params.τ_ub, params.width, zls)
 
 
 # In[32]:
