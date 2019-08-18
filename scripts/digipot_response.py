@@ -17,9 +17,9 @@ def main(chan, fname):
     for res in rm.list_resources():
         if settings.METER_ID in res:
             meter = rm.open_resource(res)
-    if meter is None:
-        raise IOError("Could not connect to multimeter")
-    meter.timeout = 10000
+    # if meter is None:
+    #     raise IOError("Could not connect to multimeter")
+    # meter.timeout = 10000
 
     inputrange = np.arange(0,256)
     outrange = np.zeros(256)
@@ -42,8 +42,8 @@ def main(chan, fname):
                         continue
                     else:
                         raise err
-                sleep(0.05)
-                outrange[i] = meter.query("MEAS:RES? 1E5")
+                sleep(0.1)
+                # outrange[i] = meter.query("MEAS:RES? 1E5")
     
     slope, intercept, _, _, _ = linregress(inputrange, outrange)
     response_equation = "R = {:.1f}n + {:.1f}".format(slope, intercept)
@@ -54,15 +54,15 @@ def main(chan, fname):
         )
     )
 
-    plt.scatter(inputrange, outrange, marker='.')
-    plt.plot(inputrange, intercept + slope * inputrange,
-        label="${}$".format(response_equation)
-    )
-    plt.xlabel("Input")
-    plt.ylabel("$R(\\Omega)$")
-    plt.ylim(ymin=0)
-    plt.legend()
-    plt.show()
+    # plt.scatter(inputrange, outrange, marker='.')
+    # plt.plot(inputrange, intercept + slope * inputrange,
+    #     label="${}$".format(response_equation)
+    # )
+    # plt.xlabel("Input")
+    # plt.ylabel("$R(\\Omega)$")
+    # plt.ylim(ymin=0)
+    # plt.legend()
+    # plt.show()
 
     utils.save(settings.DATA_DIR / 'digipot' / fname, np.array([inputrange, outrange]), {})
 

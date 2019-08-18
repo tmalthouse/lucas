@@ -36,8 +36,6 @@
 // set pin 10 as the slave select for the digital pot:
 const int slaveSelectPin = 10;
 
-// We don't want to connect to digipot unless it's powered
-const int safetyLatchPin = 11;
 
 const char OK = 'A';
 const char PWR_ERR = 'B';
@@ -56,8 +54,8 @@ void setup() {
   }
   // set the slaveSelectPin as an output:
   pinMode(slaveSelectPin, OUTPUT);
+  digitalWrite(slaveSelectPin, HIGH);
 
-  pinMode(safetyLatchPin, INPUT);
   // initialize SPI:
   SPI.begin();
   Serial.println(OK);

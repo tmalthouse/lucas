@@ -6,7 +6,7 @@ import sys
 
 def main(fname):
     data, md = utils.load(settings.DATA_DIR / fname)
-
+    print("Current settings: {}".format(md))
     print("Opened file. Edit parameter 'x' by doing md['x'] = y.")
     print("^D when finished")
     print("Starting console...\n")

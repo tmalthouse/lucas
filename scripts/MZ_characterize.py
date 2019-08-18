@@ -4,6 +4,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys
 from scipy.optimize import curve_fit
+import utils
+import datetime
 
 def raw_to_volts(series, mult):
     return series * mult
@@ -15,12 +17,10 @@ def main(argv):
     if (len(argv) != 2):
         print("Need to supply filename!")
         sys.exit(2)
-    data = np.load(DATA_DIR / "mach_zehnder" / "{}.npy".format(argv[1])).astype('float').T
-
-    with open(DATA_DIR / "mach_zehnder" / "{}.dat".format(argv[1]), "r", encoding='utf8') as capdatfile:
-        capdata = json.load(capdatfile)
-
+    data, capdata = utils.load(DATA_DIR / "mach_zehnder" / "{}".format(argv[1]))
     print(data)
+
+    data = data.T
 
     Vout = raw_to_volts(data[0], capdata['Ch1Mult'])
     Vin = raw_to_volts(data[1], capdata['Ch2Mult'])
@@ -30,11 +30,13 @@ def main(argv):
 
 
     print("Fitting to function Vout = a * sin^2(b * Vin + c)")
+    # print(np.shape(data))
 
     params,_ = curve_fit(
         lambda Vin, a, b, c: a * np.sin(b*Vin + c)**2,
         Vin,
-        Vout
+        Vout,
+        p0=[1,0.59,1] # Based on past observations
     )
 
     def create_fitted_fn(params):
@@ -51,14 +53,22 @@ def main(argv):
     fnrange = np.arange(-5,5,0.05)
 
     plt.plot(fnrange, outfn(fnrange), color='orange',
-        label="$V_{{out}} = {:.2f} \sin^2({:.3f} V_{{in}} + {:.3f})$".format(*params)
+        label="$V_{{out}} = {:.2f} \sin^2({:.3f} V_{{in}} + {:.3f})$\n$V_\pi={:.2f}$".format(
+            *params, np.pi/(2*params[1])
+        )
     )
     plt.legend(loc='upper right')
 
-    plt.title("Mach-Zehnder Modulator {} Reponse Curve".format(capdata['MZModNum']))
+    plt.title("Mach-Zehnder Modulator {:.0f} Reponse Curve".format(capdata['MZModNum']))
     plt.xlabel(r"$V_{in}$")
     plt.ylabel(r"$V_{out}$")
-    plt.savefig(FIG_DIR / "mach_zehnder" / "MZ{}Response.pdf".format(capdata['MZModNum']))
+    plt.savefig(FIG_DIR / "mach_zehnder" / "MZ{:.0f}Response_{}.pdf".format(
+            capdata['MZModNum'],
+            datetime.datetime.fromisoformat(capdata['captime']).strftime('%Y%m%d_%H%M')
+        )
+    )
+
+
     plt.show()
 
 

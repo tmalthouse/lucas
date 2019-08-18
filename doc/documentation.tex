@@ -1,0 +1,182 @@
+\documentclass{article}
+
+\usepackage[margin=1.25in]{geometry}
+\usepackage{listings}
+\usepackage{caption}
+\usepackage{color}
+\usepackage{pmboxdraw}
+\usepackage{amsmath}
+
+\newcommand{\code}{\texttt}
+% A better code font
+\usepackage{inconsolata}
+\lstset{
+    language=C,
+    keywordstyle=\color{blue},
+    basicstyle=\footnotesize\ttfamily,
+    commentstyle=\color{gray},
+    showstringspaces=false
+}
+\DeclareCaptionFont{white}{ \color{white} }
+\DeclareCaptionFormat{listing}{
+  \colorbox[cmyk]{0.43, 0.35, 0.35,0.01 }{
+    \parbox{\textwidth}{\hspace{15pt}#1#2#3}
+  }
+}
+\captionsetup[lstlisting]{ format=listing, labelfont=white, textfont=white, singlelinecheck=false, margin=0pt }
+
+\begin{document}
+    \tableofcontents
+    \newpage
+
+    \section{Project Organization}
+    Figure \ref{dirform}  shows how the project is orgaized.
+    \begin{itemize}
+        \item The \code{data} directory contains the raw data collected.
+        \begin{itemize}
+            \item \code{delay} contains data on the behavior and performance of the delay modules
+            \item \code{digipot} contains information on the AD5206 digital potentiometer (a chip you probably want to avoid)
+            \item \code{filters} has information on the bandpass filters and their characteristics over various frequency ranges
+            \item \code{lasers} has current-power curves for the three lasers in Lucas' lab. 
+            \item \code{mach}\code{zehnder} has information on the response of the three MZMs.
+        \end{itemize}
+        \item \code{doc} has this document, and associated source files.
+        \item \code{figures} has various figures and results, derived from the data. It has the same categories as the \code{data} directory.
+        \begin{itemize}
+            \item The \code{pinouts} directory has pinouts for the various ICs I used.
+        \end{itemize}
+        \item \code{manuals} has PDF manuals for the various bits used in the circuit.
+        \item \code{notes} has application notes and other writeups. These also have copies in the lab notebook.
+        \item \code{numericalanalysis} has my work on numerical bifurcation and theoretical prediction of the size and shape of the amplitude death region.
+        \item \code{papers} has PDF copies of various relevant papers.
+        \item \code{scripts} has all the Python source code for collecting and analyzing data. I'll got into more depth on what each of these scripts do later.
+    \end{itemize}
+    
+\begin{figure}[h]
+\begin{center}
+\fbox{
+\begin{minipage}{\dimexpr5cm\fboxsep-2\fboxrule\relax}
+\noindent summer-19\\
+\textSFviii\textSFvi\textSFx data\\
+\textSFxi\textSFviii\textSFx\textSFx delay\\
+\textSFxi\textSFviii\textSFx\textSFx digipot\\
+\textSFxi\textSFviii\textSFx\textSFx filters\\
+\textSFxi\textSFviii\textSFx\textSFx lasers\\
+\textSFxi\textSFii\textSFx\textSFx mach\_zehnder\\
+\textSFviii\textSFx\textSFx doc\\
+\textSFviii\textSFvi\textSFx figures\\
+\textSFxi\textSFviii\textSFx\textSFx delay\\
+\textSFxi\textSFviii\textSFx\textSFx digipot\\
+\textSFxi\textSFviii\textSFx\textSFx filters\\
+\textSFxi\textSFviii\textSFx\textSFx lasers\\
+\textSFxi\textSFviii\textSFx\textSFx mach\_zehnder\\
+\textSFxi\textSFii\textSFx\textSFx pinouts\\
+\textSFviii\textSFx\textSFx manuals\\
+\textSFviii\textSFx\textSFx notes\\
+\textSFviii\textSFx\textSFx numericalanalysis\\
+\textSFviii\textSFx\textSFx papers\\
+\textSFii\textSFx\textSFx scripts
+\end{minipage}
+}
+\end{center}
+
+\caption{The directory format of the project.}
+\label{dirform}
+\end{figure}
+
+
+    \section{Data Format}
+    All data is stored in the Numpy builtin compressed-archive format (\code{.npz}), since it's easy to work with in Python, makes it possible to store the data and metadata about its capture (such as time, test parameters, etc.) in the same file, and is nice and compact (no more 80MB captures!).
+
+    \subsection{Saving and Loading}
+    I've written a few utility functions to make saving and loading these files as simple as possible. Located in \code{utils.py}, the \code{save} function takes a filename, arbitrary Numpy array (any shape or dimension number), and (optionally) a dictionary of settings to save; and writes them to a file.
+
+    Similarly, the \code{load} function, given a filename, loads that file and returns a \code{data, metadata} tuple. If the metadata is stored in a separate file (which I was doing for the first few weeks), this function loads from that instead, and resaves the data in compressed form. The code snippet below shows how to use these functions: 
+
+    \begin{lstlisting}
+import utils
+
+data = get_data()
+metadata = {
+    'capname': 'Example Capture,
+    'lasernum': 3,
+    'lasername': 'Clara
+}
+
+utils.save("outfile", data, metadata)
+
+
+# Then later, when you need the data back:
+
+data, md = utils.load("outfile")
+    \end{lstlisting}
+
+    \subsection{Editing Files}
+    The script \code{edit\_md.py} can be used to modify a file's settings. Run it as
+    \begin{lstlisting}
+        python scripts/edit_md.py filename
+    \end{lstlisting}
+    and follow the instructions on the screen.
+
+    \section{Settings}
+    Various settings for the project can be found in \code{settings.py}. The first three entries in the file (\code{ROOT\_DIR}, \code{FIGS\_DIR}, and \code{DATA\_DIR}) set the working directory, and directories to save and load figures and data from, respectively. The snippet of Python code for \code{ROOT\_DIR}
+    \begin{lstlisting}
+        ROOT_DIR = Path(__file__).parents[1]
+    \end{lstlisting}
+    simply sets the root directory to the parent of the scripts directory. You shouldn't need to change any of these parameters, short of a major reorganization of the project.
+
+    The rest of the settings are snippets from the VISA ids of various instruments used:
+    \begin{itemize}
+        \item The scope is a Tektronix TDS-2000C 4-channel scope w/ USB out. There's one (and only one) of these in the JLab.
+        \item The function generator is an Agilent 33210A.
+        \item The multimeter is an
+    \end{itemize}
+    I believe these snippets will be the same for any instrument of the same type, but I am not sure. If you get ``InstrumentNotFoundError'' or similar, this may be the cause.
+
+    \section{Characterizing MZMs}
+
+    To characterize an MZM, connect it to the associated laser, and turn on the laser power. Feed a $10\text{V}_{\text{pp}}$ triangle wave into the MZM at 8Hz. Connect channel 2 on the scope to the function generator, and channel 1 to the detector output. Run
+    \begin{lstlisting}
+        python scripts/MZ_getdata.py
+    \end{lstlisting}
+    and follow the prompts for filename and power level.
+
+    After collecting this capture, run
+    \begin{lstlisting}
+        python scripts/MZ_characterize.py <filename>
+    \end{lstlisting}
+    to fit the appropriate curve. The fitted parameters will be printed to the terminal, and the plot saved to the figures directory. Make sure to inspect the plot to verify that the fit actually worked!
+
+    The number you probably most care about is the $V\pi$ figure reported on the terminal---this can be compared to the value on the datasheet, and used to determine the necessary offset voltages.
+
+    \section{Characterizing Lasers}
+    Unfortunately, this is the least-automated procedure in the whole project. Because I wasn't able to find out how to programmatically set the laser controller (I believe it's possible, but would require an Arduino or something), it requires manually measuring voltage at a variety of input currents. That being said, the procedure is:
+    \begin{enumerate}
+        \item Connect the output of the laser to the detector, without the polarization controller or MZM in the fiber path.
+        \item Connect the output of the detector to a multimeter set to measure DC voltage.
+        \item Open a spreadsheet, and create two columns (current and voltage).
+        \item At various input currents, measure the output voltage
+        \begin{enumerate}
+            \item There is a threshold current, typically about 8mA
+            \item My measurements were spaced at 1mA, but decent results should be achievable with slightly wider spacing
+            \item There is an overcurrent protection around 50mA, but you shouldn't need to go that high anyways---typically, current while running experiments is ca. 20mA.
+        \end{enumerate}
+        \item Save the spreadsheet (as a CSV) in \code{data/lasers}
+        \item Create a \code{.dat} file for the laser and detector configuration. Entries in this file:
+        \begin{enumerate}
+            \item \code{name}: The nickname given to the laser (Alice, Clara, and Kira)
+            \item \code{wavelength}: The peak wavelength, as given by the spec sheet
+            \item \code{R}: The detector efficiency at that wavelength, as given by the detector spec sheet
+            \item \code{G}: The gain setting of the detector
+            \item \code{Threshold}: The expected threshold current, from the datasheet.
+            \item \code{OpCurrent}: The expected current-power relation, in mW/40mA. Also from the datasheet.
+        \end{enumerate}
+        Use one of the existing files as a formatting guide.
+    \end{enumerate}
+
+    \section{Characterizing Delay Module}
+
+    For the delay module, we want to know whether and how the input signal is distorted and shifted (apart from the time delay, obviously). Some tests, such as determining the maximum input voltage and observing distortion of non-sinosoidal signals, are purely qualitative, and need little explanation.
+
+    Quantitative tests we can perform on the delay module include measuring its gain and phase shift across a variety of frequencies.
+\end{document}

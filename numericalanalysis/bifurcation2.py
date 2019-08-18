@@ -35,6 +35,9 @@ def type_debugs(vardict):
             print("\t{}".format(v.shape))
     print('\n')
 
+def summarize(array):
+    print(f"Shape: {np.shape(array)}\nMean = {np.mean(array)}\tVar. = {np.var(array)}\nMin = {np.min(array)}\tMax = {np.max(array)}")
+
 def τ_s(params, s, τ_goal):
     w0_sqr = params.w0**2
     r = params.r
@@ -96,13 +99,12 @@ def gamma_n(params, τ, n):
     for i in idx_right:
         τ_goal = τ[i]
 
-        x_0 = x-0.01
+        x_0 = x-0.05
 
         # this snippet constrains the upper bound further
         j=0
         while (-m.tan(ubound) > 1e6 or (np.abs(τ_s(params, ubound, τ_goal)) > 1e8)):
             j+=1
-            print(ubound)
             ubound -= 10**j*eps
 
         signof_ubound = sign(τ_s(params, ubound, τ_goal))
@@ -125,14 +127,14 @@ def gamma_n(params, τ, n):
             raise RuntimeError("Could not converge on iteration {}".format(i))
         s[i] = result.root
 
-        catch_bad_fit(τ, τ_goal, x_0, ubound, params, s, i, result)
+        catch_bad_fit(τ, τ_goal, x_0, ubound, params, s, i, result, n)
 
         
     
     x = n*π
     for i in reversed(idx_left):
         τ_goal = τ[i]
-        x_0 = x+0.01
+        x_0 = x+0.05
 
         
 
@@ -158,11 +160,13 @@ def gamma_n(params, τ, n):
             raise RuntimeError("Could not converge on iteration {}".format(i))
         s[i] = result.root
 
-        catch_bad_fit(τ, τ_goal, lbound, x_0, params, s, i, result)
+        catch_bad_fit(τ, τ_goal, lbound, x_0, params, s, i, result, n)
 
         
         
         
+
+    summarize(s)
 
     gamma_out = gamma_s(params, s)
     Om = s / τ
@@ -171,16 +175,18 @@ def gamma_n(params, τ, n):
     max_err = np.max(np.abs(τ_s(params, s, τ)))
     if (max_err > 1e-10):
         error_mag_warning(max_err)
+    # type_debugs(locals())
+    # exit()
     
     return gamma_out, Om
 
-def catch_bad_fit(τ, τ_goal, lbound, ubound, params, s, i, result):
-    if False: #(0.78 < τ_goal < 0.88):
+def catch_bad_fit(τ, τ_goal, lbound, ubound, params, s, i, result, n):
+    if False:#(0.78 < τ_goal < 0.88):
             rng = np.linspace(τ[0], τ[-1]*10, 1000)
             plt.close('all')
             plt.plot(rng, τ_s(params, rng, τ_goal))
             plt.plot([s[i]],0,label="Found zero point",color='red',marker='x')
-            print(f"Left search: s[i]={s[i]}\nτ={τ_goal}\nopt_res = {result}\n\n")
+            print(f"s[i]={s[i]}\tτ={τ_goal}\nopt_res = {result}\ni={i}\tn={n}\tφ={params.φ}\n")
             plt.vlines([lbound, ubound], -2,2, label="Bounding for fit")
             plt.ylim((-2,2))
             plt.xlim((0,2*s[i]))
@@ -221,9 +227,9 @@ def AD_area(τ, par, crv0, crv3, crv4, crv34, show=False, saveloc=None):
     xs = τ/par.THmax
 
     plt.close()
-    plt.plot(xs, crv0, label="Uncoupled curve")
-    plt.plot(xs, crv3, label="Coupled curve 1")
-    plt.plot(xs, crv4, label="Coupled curve 2")
+    plt.plot(xs, crv0.T, label="Uncoupled curve")
+    # plt.plot(xs, crv3.T, label="Coupled curve 1")
+    # plt.plot(xs, crv4.T, label="Coupled curve 2")
     plt.plot(xs, crv34, label="Coupled curve")
     ad_regions = plt.fill_between(xs, crv0, crv34, where=(crv34>crv0), facecolor="lightgrey", edgecolor='darkgrey', hatch='xxxx', interpolate=True)
     plt.xlabel(r"$\tau_{sf}/T_0$")
@@ -259,7 +265,7 @@ def area_from_ξ(ξ, show=False, saveloc=None, params=params.default):
 
     defaultparams = params()
     τ = np.linspace(0.01*defaultparams.THmax, 3.5*defaultparams.THmax, 1000)
-    nmax = 20
+    nmax = 10
     ns = np.arange(0,nmax, 2)
 
     crv0 = make_curve(ns, φ=0, τ=τ, r=0, params_fn=params_fn)

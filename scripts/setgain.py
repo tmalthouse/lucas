@@ -7,10 +7,11 @@ from os import system
 
 BRIDGE_R = 33000
 
-wiper_r = 31.67
-step_r = 202.35
+
+step_r = -202.35
+wiper_r = 31.67 - (255 * step_r)
 possible_Rs = wiper_r + step_r * np.arange(256)
-# print(np.array([np.arange(256),possible_Rs]).T)
+print(np.array([np.arange(256),possible_Rs]).T)
 
 command_listing = """Available Commands:
 
@@ -23,10 +24,10 @@ command_listing = """Available Commands:
 """
 
 channel_map = {
-    1: 4,
+    1: 6,
     2: 3,
-    3: 2,
-    4: 5
+    3: 1,
+    4: 4
 }
 
 def gain(R):
@@ -36,18 +37,15 @@ def gain_to_R(gain):
     return BRIDGE_R/gain
 
 def closest_possible_r(R):
-    idx = np.searchsorted(possible_Rs, R)
-    if idx > 0 and (idx == len(possible_Rs) or math.fabs(R - possible_Rs[idx-1]) < math.fabs(R - possible_Rs[idx])):
-        return idx, possible_Rs[idx-1]
-    else:
-        return idx, possible_Rs[idx]
+    idx = np.argmin(np.abs(possible_Rs - R))
+    return idx, possible_Rs[idx]
 
 def setgain(g, chan, dp):
     needed_r = gain_to_R(g)
     setting, actual_r = closest_possible_r(needed_r)
     print("Setting = 0x{:x}, actual R = {:.2f}".format(setting, actual_r))
     print("Actual gain = {:.2f}".format(gain(actual_r)))
-    dp.set(chan, setting)
+    dp.set(chan-1, setting)
 
 def querygain(dp, chan):
     gain_s = input("Desired gain for channel {}: ".format(chan))
@@ -61,7 +59,7 @@ def querygain(dp, chan):
         print("Invalid gain {}. Must be positive.".format(gain_s)) 
 
 def main():
-    with digipot.DigiPotDummy() as dp:
+    with digipot.DigiPot() as dp:
         print("Gain Control System")
         print(command_listing)
         while (True):

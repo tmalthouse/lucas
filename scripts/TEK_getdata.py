@@ -18,8 +18,8 @@ def convert_data(rawdata):
 
 def sample_channel(scope,channel):
     scope.write("DAT:SOU CH{}".format(channel))
-    printquery(scope,'WFMP:YMU?')
-    return convert_data(scope.query_binary_values("CURV?", datatype='c'))
+    ymult = scope.query('WFMP:YMU?')
+    return convert_data(scope.query_binary_values("CURV?", datatype='c')), ymult
 
 def save_data(scope,data, name=None):
     param = scope.query("WFMP?")
@@ -37,11 +37,15 @@ def capturedata():
     rm = visa.ResourceManager()
 
     print("Connecting to scope...")
-    try:
-        scope = rm.open_resource(rm.list_resources()[0])
-    except IndexError:
+    resources = rm.list_resources()
+    scope = None
+    for res in resources:
+        if SCOPE_ID in res:
+            scope = rm.open_resource(res)
+    if scope is None:
         print("Could not find scope---is it on and plugged in?")
         raise FileNotFoundError
+        
     print("Connected!")
     scope.timeout = 10000
 
@@ -54,9 +58,12 @@ def capturedata():
 
 
     print("Taking data...")
-    ch1 = sample_channel(scope,1)
-    ch2 = sample_channel(scope,2)
+    ch1,ch1mult = sample_channel(scope,1)
+    ch2,ch2mult = sample_channel(scope,2)
     print("Data collected!")
     scope.close()
 
-    return (ch1,ch2)
+    return (ch1,ch2),{
+        'Ch1Mult': ch1mult,
+        'Ch2Mult': ch2mult
+    }
