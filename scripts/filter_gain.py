@@ -42,13 +42,13 @@ def find_params(freqs, gains):
 def main(fname):
     data, metadata = utils.load(fname)
 
+    print("Missing data warnings are expected with low refresh rates. Check the plot to make sure it looks reasonable, but do not be alarmed.")
     warning_printed = False
-    for series in data:
+    for i, series in enumerate(data):
         if np.min(series) == -128:
-            if not warning_printed:
-                warnings.warn("Warning: missing data in series {}. Interpreting as 0. This occurs with very low refresh rates.".format(series), RuntimeWarning, stacklevel=2)
-                warning_printed = True
+            warnings.warn("Warning: missing data in series {} ({}). Interpreting as 0.".format(i, series), RuntimeWarning, stacklevel=2)
             series[series == -128] = 0
+    
 
     freqs = np.arange(metadata['fmin'], metadata['fmax'], metadata['fstep'])
 

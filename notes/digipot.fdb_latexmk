@@ -1,5 +1,5 @@
 # Fdb version 3
-["pdflatex"] 1562784032 "/Users/Thomas/Documents/Reed/summer19/lucas/notes/digipot.tex" "/Users/Thomas/Documents/Reed/summer19/lucas/notes/digipot.pdf" "digipot" 1562784033
+["pdflatex"] 1562784032 "/Users/Thomas/Documents/Reed/summer19/lucas/notes/digipot.tex" "/Users/Thomas/Documents/Reed/summer19/lucas/notes/digipot.pdf" "digipot" 1566416224
   "/Users/Thomas/Documents/Reed/summer19/lucas/notes/digipot.aux" 1562784032 8 a94a2480d3289e625eea47cd1b285758 ""
   "/Users/Thomas/Documents/Reed/summer19/lucas/notes/digipot.tex" 1562784032 6190 5548220b950bc819760215739e995763 ""
   "/usr/local/texlive/2016/texmf-dist/fonts/map/fontname/texfonts.map" 1272929888 3287 e6b82fe08f5336d4d5ebc73fb1152e87 ""
@@ -75,8 +75,8 @@
   "digipot.aux" 1562784032 8 a94a2480d3289e625eea47cd1b285758 ""
   "digipot.tex" 1562784032 6190 5548220b950bc819760215739e995763 ""
   (generated)
-  "/Users/Thomas/Documents/Reed/summer19/lucas/notes/digipot.pdf"
   "/Users/Thomas/Documents/Reed/summer19/lucas/notes/digipot.log"
-  "digipot.aux"
-  "digipot.log"
   "digipot.pdf"
+  "/Users/Thomas/Documents/Reed/summer19/lucas/notes/digipot.pdf"
+  "digipot.log"
+  "digipot.aux"

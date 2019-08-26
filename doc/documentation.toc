@@ -1,8 +1,0 @@
-\contentsline {section}{\numberline {1}Project Organization}{2}
-\contentsline {section}{\numberline {2}Data Format}{2}
-\contentsline {subsection}{\numberline {2.1}Saving and Loading}{2}
-\contentsline {subsection}{\numberline {2.2}Editing Files}{3}
-\contentsline {section}{\numberline {3}Settings}{3}
-\contentsline {section}{\numberline {4}Characterizing MZMs}{4}
-\contentsline {section}{\numberline {5}Characterizing Lasers}{4}
-\contentsline {section}{\numberline {6}Characterizing Delay Module}{5}

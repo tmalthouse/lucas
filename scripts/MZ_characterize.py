@@ -47,16 +47,22 @@ def main(argv):
     
     outfn = create_fitted_fn(params)
 
-    print("Fitted Results:\n\ta={}\n\tb={}\n\tc={}\n\t==>Vπ={}".format(*params, np.pi/(2*params[1])))
+    a, b, c = params
+    Vπ = np.pi/(2*b)
+    print("Fitted Results:\n\ta={}\n\tb={}\n\tc={}\n\t==>Vπ={}".format(*params, np.pi/(2*b)))
+    Voff = -(np.pi)/(4*b) - c/b + Vπ
+    print("For φ=-π/2, need Voff={:.2f}V".format(Voff))
+    
     
     plt.scatter(Vin, Vout, marker='.')
     fnrange = np.arange(-5,5,0.05)
 
     plt.plot(fnrange, outfn(fnrange), color='orange',
-        label="$V_{{out}} = {:.2f} \sin^2({:.3f} V_{{in}} + {:.3f})$\n$V_\pi={:.2f}$".format(
+        label="$V_{{out}} = {:.2f} \sin^2({:.3f} V_{{in}} + {:.3f})$\n$V_\pi={:.2f}V$".format(
             *params, np.pi/(2*params[1])
         )
     )
+    plt.scatter(Voff, outfn(Voff), marker='x', color='red', label='$V_{{off}} = {:.2f}$'.format(Voff))
     plt.legend(loc='upper right')
 
     plt.title("Mach-Zehnder Modulator {:.0f} Reponse Curve".format(capdata['MZModNum']))

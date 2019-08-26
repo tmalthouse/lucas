@@ -104,7 +104,7 @@ def find_gammas(taus, show=False):
 
     par = {
         'tau_sf': 12.435,
-        'tau_c': 0.124,
+        'tau_c': 12.435*1e-4,
         'gamma_c': 0.25,
         'T0': 11.47
     }
@@ -128,9 +128,9 @@ def find_gammas(taus, show=False):
         omega_mid = 2 * π / params['T0']
 
         if params['tau_sf'] == 0:
-            delta_omega = 8 * π/params['T0'] * 5
+            delta_omega = 8 * π/params['T0']
         else:
-            delta_omega = m*2*π/params['tau_sf'] * 5
+            delta_omega = m*2*π/params['tau_sf']
         
         omega_low = max(0, omega_mid - delta_omega)
         omega_high = omega_mid + delta_omega
@@ -179,7 +179,14 @@ def find_gammas(taus, show=False):
             out_x.append(taus[i])
             out_y.append(res)
     
+    plt.close('all')
+    ax2 = plt
     ax2.scatter(out_x, out_y, marker='.')
+    ax2.ylabel("$\\gamma$")
+    ax2.xlabel("$\\tau$")
+    ax2.xlim((0,4))
+    ax2.ylim((0,160))
+    ax2.savefig("outfig.pdf")
     plt.show()
 
     g = np.zeros_like(taus)
@@ -305,7 +312,7 @@ def follow_curve(taus, W, i, gamma, omega, curve=[]):
         quadappx = polynomial_appx([lag2_tau, lag1_tau, initial_tau], [lag2_gamma, lag1_gamma, initial_gamma])
         est3_gamma = quadappx(taus[i+1])
 
-        candidate3_dix, candidate3_gamma = find_nearest(W[i+1]['posgamma'], est2_gamma)
+        candidate3_idx, candidate3_gamma = find_nearest(W[i+1]['posgamma'], est2_gamma)
         err3 = abs(candidate3_gamma-est3_gamma)
     
     # Democracy is the worst form of decision-making, except for all the others
@@ -319,4 +326,4 @@ def follow_curve(taus, W, i, gamma, omega, curve=[]):
 
     
 if __name__ == "__main__":
-    find_gammas(np.linspace(0,5,200), True)
+    find_gammas(np.linspace(0,10,200), True)

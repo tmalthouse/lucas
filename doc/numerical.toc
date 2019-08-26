@@ -1,0 +1,6 @@
+\contentsline {section}{\numberline {1}The Problem}{1}
+\contentsline {section}{\numberline {2}Uncoupled Oscillator Analysis}{1}
+\contentsline {section}{\numberline {3}Coupled Oscillator Analysis}{3}
+\contentsline {section}{\numberline {4}Numerical Analysis}{5}
+\contentsline {subsection}{\numberline {4.1}The Naive Problem}{5}
+\contentsline {subsection}{\numberline {4.2}Bounding $\Omega $}{5}
